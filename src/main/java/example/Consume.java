@@ -26,6 +26,7 @@ public class Consume {
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "group1");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 1024);
 
         // Create Kafka consumer
         KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(props);
@@ -34,6 +35,7 @@ public class Consume {
         String topic = "java";
         consumer.subscribe(Collections.singletonList(topic));
 
+        int max_batch = 0;
         // Poll for records
         try {
             while (true) {
@@ -43,11 +45,13 @@ public class Consume {
                     for (ConsumerRecord<String, byte[]> record : records) {
                         String key = record.key();
                         List<Float> value = deserialize(record.value());
-                        System.out.println("Received record with key: " + key + ", value: " + value);
+//                        System.out.println("Received record with key: " + key + ", value: " + value);
 
                         // Add record to batch
                         batch.add(value);
                     }
+                    max_batch = Math.max(max_batch, batch.size());
+                    System.out.println(max_batch);
 
                     // Send batch for prediction
                     sendBatchForPrediction(batch);
@@ -122,7 +126,7 @@ public class Consume {
             for (int i = 0; i < predictions.length(); i++) {
                 JSONArray prediction = predictions.getJSONArray(i);
                 int maxIndex = getMaxIndex(prediction);
-                System.out.println("Prediction " + (i + 1) + ": Max value index = " + maxIndex);
+//                System.out.println("Prediction " + (i + 1) + ": Max value index = " + maxIndex);
             }
 
         } catch (Exception e) {
