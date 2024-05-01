@@ -35,26 +35,32 @@ public class Consume {
         String topic = "java";
         consumer.subscribe(Collections.singletonList(topic));
 
-        int max_batch = 0;
+        long cnt = 0;
+        int batchSize = 1024; // Set your desired batch size
+        List<List<Float>> batch = new ArrayList<>();
+        System.out.println("BatchSize:" + batchSize);
+
         // Poll for records
         try {
             while (true) {
                 ConsumerRecords<String, byte[]> records = consumer.poll(Duration.ofMillis(100));
-                if (!records.isEmpty()) {
-                    List<List<Float>> batch = new ArrayList<>();
-                    for (ConsumerRecord<String, byte[]> record : records) {
-                        String key = record.key();
-                        List<Float> value = deserialize(record.value());
-//                        System.out.println("Received record with key: " + key + ", value: " + value);
+                for (ConsumerRecord<String, byte[]> record : records) {
+                    String key = record.key();
+                    List<Float> value = deserialize(record.value());
+//                    System.out.println("Received record with key: " + key + ", value: " + value);
 
-                        // Add record to batch
-                        batch.add(value);
+                    // Add record to batch
+                    batch.add(value);
+
+                    // Check if batch is full
+                    if (batch.size() >= batchSize) {
+                        // Send batch for prediction
+                        System.out.println(cnt);
+                        cnt++;
+                        sendBatchForPrediction(batch);
+                        // Clear batch
+                        batch.clear();
                     }
-                    max_batch = Math.max(max_batch, batch.size());
-                    System.out.println(max_batch);
-
-                    // Send batch for prediction
-                    sendBatchForPrediction(batch);
                 }
             }
         } finally {
