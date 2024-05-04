@@ -30,3 +30,9 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+shadowJar {
+    archiveBaseName.set('experiment')
+    archiveClassifier.set('')
+    archiveVersion.set('0.1')
+}
