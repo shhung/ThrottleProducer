@@ -20,13 +20,12 @@ import java.io.InputStreamReader;
 public class Consume {
 
     public static void main(String[] args) {
-        // Kafka consumer properties
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "my-cluster-kafka-bootstrap.kafka:9092");
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "group1");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
-        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 1024);
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 2048);
 
         // Create Kafka consumer
         KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(props);
@@ -35,23 +34,21 @@ public class Consume {
         String topic = "java";
         consumer.subscribe(Collections.singletonList(topic));
 
-        int max_batch = 0;
         // Poll for records
         try {
+            //noinspection InfiniteLoopStatement
             while (true) {
                 ConsumerRecords<String, byte[]> records = consumer.poll(Duration.ofMillis(100));
                 if (!records.isEmpty()) {
                     List<List<Float>> batch = new ArrayList<>();
                     for (ConsumerRecord<String, byte[]> record : records) {
-                        String key = record.key();
                         List<Float> value = deserialize(record.value());
 //                        System.out.println("Received record with key: " + key + ", value: " + value);
 
                         // Add record to batch
                         batch.add(value);
                     }
-                    max_batch = Math.max(max_batch, batch.size());
-                    System.out.println(max_batch);
+//                    System.out.println(batch.size());
 
                     // Send batch for prediction
                     sendBatchForPrediction(batch);

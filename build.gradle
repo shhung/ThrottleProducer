@@ -1,5 +1,15 @@
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath 'com.github.johnrengelman:shadow:8.1.1'
+    }
+}
+
 plugins {
     id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group = 'hpds.kafka'
@@ -15,8 +25,6 @@ dependencies {
     implementation 'org.apache.kafka:kafka_2.13:3.6.1'
     implementation 'net.sourceforge.argparse4j:argparse4j:0.4.3'
     implementation 'org.json:json:20231013'
-
-
 }
 
 test {
