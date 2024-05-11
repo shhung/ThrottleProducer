@@ -20,19 +20,28 @@ import java.io.InputStreamReader;
 public class Consume {
 
     public static void main(String[] args) {
+        String bootstrapServer = System.getenv().getOrDefault("BOOTSTRAP_SERVER", "my-cluster-kafka-bootstrap.kafka:9092");
+        String groupId = System.getenv().getOrDefault("GROUP_ID", "group1");
+        int maxPollRecords = Integer.parseInt(System.getenv().getOrDefault("MAX_POLL_RECORDS", "2048"));
+
         Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "my-cluster-kafka-bootstrap.kafka:9092");
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "group1");
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServer);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
-        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 2048);
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPollRecords);
 
         // Create Kafka consumer
         KafkaConsumer<String, byte[]> consumer = new KafkaConsumer<>(props);
 
         // Subscribe to topic
-        String topic = "java";
+        String topic = System.getenv().getOrDefault("TOPIC", "java");
         consumer.subscribe(Collections.singletonList(topic));
+
+        System.out.println("bootstrap_server: " + bootstrapServer);
+        System.out.println("group_id: " + groupId);
+        System.out.println("max poll: " + maxPollRecords);
+        System.out.println("topic: " + topic);
 
         // Poll for records
         try {
